@@ -1,13 +1,13 @@
 TASK 1
 
-To find the top 5 IP addreses I used the 'awk' utility. awk is used to extract and then print specific contents of a file and is often used to construct reports.
+To find the top 5 IP addresses I used the 'awk' utility. awk is used to extract and then print specific contents of a file and is often used to construct reports.
 
 The command looked like this: awk '{print $3}' /var/log/apache/access.log | sort | uniq -c | sort -nr | head -5
 
 Let me break it into several parts:
 
 awk '{print $3}' /var/log/apache/access.log: This extracts the third column with IP addresses from the access.log file;
-sort: this parameter soerts the IP addresses alphabetically;
+sort: this parameter sorts the IP addresses alphabetically;
 uniq -c: with this parameter we count occurrences of each unique IP address;
 sort -rn: the following function sorts the IP addresses based on their occurrence counts in descending order;
 head -n 5: with this parameter we display the top 5 IP addresses along with their occurrence counts.
@@ -58,14 +58,16 @@ Based on the output we can see that the amount of requests with the '499' code a
 
 So with this information knowing that we have 379 cases with the '499' code, we can check if all of them were related to accessing this page '/page.php':
 
-grep ' 499 ' access.log | grep '/page.php' | wc -l
+grep ' 499 ' /var/log/apache/access.log | grep '/page.php' | wc -l
 
 We received 379.
 
-To check if there were any connections with 200 code to this page, we can change the variable to '200'
+To check if there were any connections with the 200 code to this page, we can change the variable to '200'
 
 We received 0.
 
-This comes to result that all the connections to the page '/page.php' resulted in 499 HTTP code. Which means that the client did not wait long enough for the server to respond.
+This comes to the result that all the connections to the page '/page.php' resulting in 499 HTTP code. This means that the client did not wait long enough for the server to respond.
 _________________________________________________
-Based on the information provided and the content of the access log file, here are several potential anomalies and points of interest that could warrant further investigation. High volume from a single IP Address shows the fact that there were 1184 connections from a single IP address (98.126.83.64) is unusual and could indicate either a misconfigured client or potential malicious activity, such as a DoS attack. While 1849 connections from other addresses resulted in HTTP code 200, shows the high volume of successful connections in a short time frame could suggest a coordinated access pattern or a stress test on the server. The domain name "example2.com" appearing 2009 times suggests it's either a target of specific interest or part of a larger automated access pattern. Perhaps some server for this domain name is being undeer attack. However, if this is not the case, it might indicate targeted testing of vulnerabilities on the server.
+Based on the information provided and the content of the access log file, here are several potential anomalies and points of interest that could warrant further investigation. 
+High volume from a single IP Address shows the fact that there were 1184 connections from a single IP address (98.126.83.64) is unusual and could indicate either a misconfigured client or potential malicious activity, such as a DoS attack. While 1849 connections from other addresses resulted in HTTP code 200, showing the high volume of successful connections in a short time frame could suggest a coordinated access pattern or a stress test on the server. 
+The domain name "example2.com" appearing 2009 times suggests it's either a target of specific interest or part of a larger automated access pattern. Perhaps some server for this domain name is being under attack. However, if this is not the case, it might indicate targeted testing of vulnerabilities on the server.
