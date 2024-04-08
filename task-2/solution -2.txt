@@ -1,8 +1,8 @@
-I have decieded to go for the Minikube being used as a local Kubernetes cluster. First of all, I have installed the WSL on my desktop PC and installed Docker. After that, I installed the Minikube as well as the Kubectl tool in order to interact with my Kubernetes cluster. After starting the Minicube cluster, I installed the fresh sample of nginx deployment for my future reference. For easier investigation and navigation, I enabled the Minikube dashboard and verified that sample nginx is installed. Then I uploaded the nginx.yaml file on my K8s and saw that it is not starting.
+I have decided to go for the Minikube being used as a local Kubernetes cluster. First of all, I have installed the WSL on my desktop PC and installed Docker. After that, I installed the Minikube as well as the Kubectl tool in order to interact with my Kubernetes cluster. After starting the Minicube cluster, I installed the fresh sample of nginx deployment for my future reference. For easier investigation and navigation, I enabled the Minikube dashboard and verified that sample nginx was installed. Then I uploaded the nginx.yaml file on my K8s and saw that it is not starting.
 
-First of all, I checked through the dashboard if there are some distinctive errors that I could face. But in result, the nginx was just not starting. 
+First of all, I checked through the dashboard if there were some distinctive errors that I could face. But as a result, the nginx was just not starting. 
 
-So I decided to check the .yaml contents thinking maybe there is some syntax error. I opened the faulty configuration and the sample one for my reference and started matching them. There are to sections - deployment and service. So I started checking the variables and see if there are any mismatches or mistakes. 
+So I decided to check the .yaml contents thinking maybe there is some syntax error. I opened the faulty configuration and the sample one for my reference and started matching them. There are two sections - deployment and service. So I started checking the variables and see if there are any mismatches or mistakes. 
 
 After that, I have noticed that the app name in both sections differ, which I though might be an issue. 
 
@@ -24,11 +24,22 @@ selector:
 
 Then I saved the file, but the new error appeared: 0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling
 
-I started the research of what could be the problem. Apparently, a node was not labelled to the application. So I thought that I need to label it with the required value and label. For these purposes I have used the following command: kubectl label nodes minikube node-role.kubernetes.io/application=sretest . The application got restarted and its state became active in Minikube dashboard (link to screenshot). In order to verify the configuration, I needed the link to access the website. So I used the command  minikube service sretest-service --url to get the URL. After that I open the browser and see the result, the Nginx default page appeared and everything works.
+I started the research on what could be the problem. Apparently, a node was not labelled to the application. So I thought that I need to label it with the required value and label. For these purposes I have used the following command: kubectl label nodes minikube node-role.kubernetes.io/application=sretest . The application got restarted and its state became active in Minikube dashboard. To verify the configuration, I needed the link to access the website. So I used the command  minikube service sretest-service --url to get the URL. After that I opened the browser and saw the result, the Nginx default page appeared and everything worked.
 
-
-In the result, I need to find out how can I retrieve the merged nginx.yaml file with fixes and new configuration into one single file so it contains both deployment and service sections. 
+As a result, I need to find out how can I retrieve the merged nginx.yaml file with fixes and new configuration into one single file so it contains both deployment and service sections. 
 
 To check the services and deployments I used these commands: kubectl get deployments and kubectl get services.
 
-Then I exported them to .yaml files using the following commands respectively: kubectl get deployment sretest -o yaml > nginx-deployment.yaml and kubectl get services sretest-service -o yaml > nginx-service.yaml . To combine them I used simple cat command: cat nginx-deployment.yaml nginx-service.yaml > nginx-new.yaml
+The outputs were the following:
+encore@enCore-PC:~kubectl get deploymentsts
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-web   1/1     1            1           20h
+sretest     1/1     1            1           19h
+encore@enCore-PC:~$ kubectl get services
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+kubernetes        ClusterIP   10.96.0.1       <none>        443/TCP         20h
+nginx-web         NodePort    10.108.209.74   <none>        999:30457/TCP   20h
+sretest-service   NodePort    10.97.146.6     <none>        80:30851/TCP    19h
+Then I exported them to .yaml files using the following commands respectively: kubectl get deployment sretest -o yaml > nginx-deployment.yaml and kubectl get services sretest-service -o yaml > nginx-service.yaml . 
+
+To combine them I used a simple cat command: cat nginx-deployment.yaml nginx-service.yaml > nginx-new.yaml
