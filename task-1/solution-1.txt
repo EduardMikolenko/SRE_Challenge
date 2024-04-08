@@ -1,0 +1,72 @@
+TASK 1
+
+To find the top 5 IP addreses I used the 'awk' utility. awk is used to extract and then print specific contents of a file and is often used to construct reports.
+
+The command looked like this: awk '{print $3}' /var/log/apache/access.log | sort | uniq -c | sort -nr | head -5
+
+Let me break it into several parts:
+
+'awk '{print $3}' /var/log/apache/access.log' this parameter extracts the third column with IP addresses from the access.log file;
+'sort'  soerts the IP addresses alphabetically;
+'uniq -c' with this parameter we count occurrences of each unique IP address;
+'sort -rn' the following function sorts the IP addresses based on their occurrence counts in descending order;
+'head -n 5' with this parameter we display the top 5 IP addresses along with their occurrence counts.
+
+As a result, we have the following IP address that appears and the one that has abnormal amount of connections at the top:
+1184 98.126.83.64
+
+
+The rest of IP addresses are unique ones that is why they also appear. All other IP addresses connected once. So basically the rest of 2816 IPs can take the second place. 
+__________________________________________________
+To find the amount of connections which resulted in HTTP statuses, we can use the 'grep' utility and simple command for that.
+
+The full command is the following: grep '200' /var/log/apache/access.log | wc -l 
+
+grep ' 200 ' access.log searches the access.log file for lines containing a space followed by "200" and another space. We do it in order to avoid partial matches.
+The parameter wc -l counts the number of lines returned by the grep command.
+
+For the status codes 500 we can use grep '500' because addresses have octets 0-255, so they won't match.
+
+As a result, we get the number of successful connections: 1849. There are no 500 codes, the server did not encounter an unexpected condition that prevented it from fulfilling the request. 
+__________________________________________________
+To list the amounts of requests per minute we can use this awk command: 
+
+awk '{print $2}' /var/log/apache/access.log | cut -d ':' -f '1-2' | sort | uniq -c | sort -rn
+
+This command will use the second column that contains the time stamps and take into account that time format has ':' symbol in it. Then we will use sorting numerically. This command counts and lists the number of requests per minute. It is a short way to analyze the frequency of requests in this access log.
+
+808 15:04
+802 15:00
+801 15:01
+800 15:03
+778 15:02
+11 15:05
+_________________________________________________
+To find out the most frequent domain name accessing the server, we can use the following command:
+
+awk '{print $5}' /var/log/apache/access.log | sort | uniq -c | sort -nr | head -1
+
+This command refers to the fifth column that contains domain names and provides the most frequent one.
+
+It's example2.com that appeared 2009 times. The output is:
+
+2009 example2.com
+_________________________________________________
+The question is to determine whether all the requests that go to '/page.php' result in '499' code. If we check how many occurences of '/page.php are there'. We can use the command: 
+
+grep '/page.php' /var/log/apache/access.log | wc -l
+
+The output is: 379
+
+Based on the output we can see that the amount of requests with the 'mentions' are 379.
+
+So with this information knowing that we have 379 cases with the '/page.php', we can check if all of them were related to 499 codes:
+
+grep '/page.php' /var/log/apache/access.log | grep '499'| wc -l
+
+The output is: 379
+
+This comes to result that all the connections to the page '/page.php' resulted in 499 HTTP code. Which means that the client did not wait long enough for the server to respond.
+_________________________________________________
+To sum up the behaviour and the logs, we can say that the high load from a single IP address shows the fact that there were 1184 connections from certain IP address. That is an unusual behaviour, or there is a misconfiguration on the client's side. Most likely this is a malicious activity, like DoS attack. 
+Additionally, 1849 connections from other addresses resulted in the HTTP code 200. That shows the high load of successful connections in a short period of time which looks like a coordinated access pattern or a stress test on the specific server. The domain name "example2.com" which appeared 2009 times shows that it is either a target. Perhaps some server for this domain name is being undeer attack. Nevertheless, if this is not the case, this behaviour might indicate a forced testing of vulnerabilities on the server.
