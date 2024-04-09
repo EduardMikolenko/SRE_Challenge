@@ -1,31 +1,31 @@
 TASK 1
 
-To find the top 5 IP addreses I used the 'awk' utility. awk is used to extract and then print specific contents of a file and is often used to construct reports.
+To find the top 5 IP addresses I used the 'awk' utility. awk is used to extract and then print specific contents of a file and is often used to construct reports.
 
 The command looked like this: awk '{print $3}' /var/log/apache/access.log | sort | uniq -c | sort -nr | head -5
 
 Let me break it into several parts:
 
 'awk '{print $3}' /var/log/apache/access.log' this parameter extracts the third column with IP addresses from the access.log file;
-'sort'  soerts the IP addresses alphabetically;
+'sort'  sorts the IP addresses alphabetically;
 'uniq -c' with this parameter we count occurrences of each unique IP address;
 'sort -rn' the following function sorts the IP addresses based on their occurrence counts in descending order;
 'head -n 5' with this parameter we display the top 5 IP addresses along with their occurrence counts.
 
-As a result, we have the following IP address that appears and the one that has abnormal amount of connections at the top:
+As a result, we have the following IP address that appears and the one that has an abnormal amount of connections at the top:
 1184 98.126.83.64
 
 
-The rest of IP addresses are unique ones that is why they also appear. All other IP addresses connected once. So basically the rest of 2816 IPs can take the second place. 
+The rest of the IP addresses are unique ones that is why they also appear. All other IP addresses are connected once. So basically the rest of 2816 IPs can take the second place. 
 __________________________________________________
-To find the amount of connections which resulted in HTTP statuses, we can use the 'grep' utility and simple command for that.
+To find the number of connections that resulted in HTTP statuses, we can use the 'grep' utility and simple command for that.
 
-The full command is the following: grep '200' /var/log/apache/access.log | wc -l 
+The full command is the following: grep ' 200 ' /var/log/apache/access.log | wc -l 
 
-grep ' 200 ' access.log searches the access.log file for lines containing a space followed by "200" and another space. We do it in order to avoid partial matches.
+grep ' 200 ' access.log searches the access.log file for lines containing a space followed by "200" and another space. We do it to avoid partial matches like IP addresses which has octects from 0 to 255.
 The parameter wc -l counts the number of lines returned by the grep command.
 
-For the status codes 500 we can use grep '500' because addresses have octets 0-255, so they won't match.
+For the status code 500, we can use just grep '500' /var/log/apache/access.log | wc -l. There were no 500 codes.
 
 As a result, we get the number of successful connections: 1849. There are no 500 codes, the server did not encounter an unexpected condition that prevented it from fulfilling the request. 
 __________________________________________________
